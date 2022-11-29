@@ -31,10 +31,14 @@
 
 const currencyOneEl = document.querySelector('[data-js="currency-one"]')
 const currencyTwoEl = document.querySelector('[data-js="currency-two"]')
-const currencyEl = document.querySelector('[data-js="currencies-container"]');
+const currencyEl = document.querySelector('[data-js="currencies-container"]')
+const convertedValueEl = document.querySelector('[data-js="converted-value"]')
+const valuePrecisionEl = document.querySelector('[data-js="conversion-precision"]')
+const timesCurrencyOneEl = document.querySelector('[data-js="currency-one-times"]')
 
+let internalExchangeRate = {}
 
-  const url = 'https://v6.exchangerate-api.com/v6/4a100b7cfa17f2816ee9f0aa/latest/USD'
+const url = 'https://v6.exchangerate-api.com/v6/4a100b7cfa17f2816ee9f0aa/latest/USD'
 
 const getErrorMessage = errorType =>({
   'unsupported-code': 'A moeda não existe em nosso banco de dados',
@@ -85,16 +89,30 @@ const fetchExchangeRate = async() => {
 const init = async () => {
   const exchangeRateData = await fetchExchangeRate()
 
-  const options = Object.keys(exchangeRateData.conversion_rates)
-    .map(currency => `<option>${currency}</option>`)
+  internalExchangeRate = {...exchangeRateData}
+
+  const getOptions = selectedCurrency => Object.keys(exchangeRateData.conversion_rates)
+    .map(currency => `<option ${currency === selectedCurrency ? 'selected' : ''}>${currency}</option>`)
     .join('')
 
-  console.log(options)
 
-  currencyOneEl.innerHTML = options
-  currencyTwoEl.innerHTML = options
+  currencyOneEl.innerHTML = getOptions('USD')
+  currencyTwoEl.innerHTML = getOptions('BRL')
+
+  convertedValueEl.textContent = exchangeRateData.conversion_rates.BRL.toFixed(2)
+  valuePrecisionEl.textContent = `1 USD = ${exchangeRateData.conversion_rates.BRL} BRL`
 
 }
+
+  timesCurrencyOneEl.addEventListener ('input', e => {
+    convertedValueEl.textContent = (e.target.value * internalExchangeRate.conversion_rates[currencyTwoEl.value]).toFixed(2)
+  })
+
+  currencyTwoEl.addEventListener ('input', e =>{
+  
+console.log(internalExchangeRate.conversion_rates[e.target.value])
+
+})
 
 init()
 
